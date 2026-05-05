@@ -1,5 +1,7 @@
 # 老鼠地圖 RatMap Android
 
+![RatMap Cover](docs/cover.png)
+
 **中文** | [English](#english)
 
 台北市鼠患通報地圖 POC — 以 Google Maps + Marker Clustering 展示各地鼠患回報點位。  
