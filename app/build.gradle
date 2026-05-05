@@ -1,19 +1,26 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
+
+def localProps = new Properties()
+def localPropsFile = rootProject.file('local.properties')
+if (localPropsFile.exists()) {
+    localPropsFile.withReader('UTF-8') { reader -> localProps.load(reader) }
+}
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.3"
+    namespace "com.mickey.threepayinfo"
+    compileSdk 35
 
     defaultConfig {
-        applicationId "com.mickey.threepayinfo"
-        minSdkVersion 24
-        targetSdkVersion 29
+        applicationId "com.mickey.ratmap"
+        minSdk 26
+        targetSdk 35
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        resValue "string", "google_maps_key", (localProps.getProperty("MAPS_API_KEY") ?: "")
     }
 
     buildTypes {
@@ -22,19 +29,26 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
 }
 
 dependencies {
-    implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.3.0'
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'com.google.android.gms:play-services-maps:17.0.0'
-    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation 'com.google.maps.android:android-maps-utils:1.1.0'
-
-    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'com.google.android.gms:play-services-maps:19.0.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.maps.android:android-maps-utils:3.8.2'
+    implementation 'com.google.code.gson:gson:2.11.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
 }

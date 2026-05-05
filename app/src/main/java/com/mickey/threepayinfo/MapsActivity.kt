@@ -1,107 +1,73 @@
 package com.mickey.threepayinfo
 
 import android.os.Bundle
-import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.gson.Gson
-import com.google.gson.JsonElement
+import com.google.gson.reflect.TypeToken
 import com.google.maps.android.clustering.ClusterManager
-import com.mickey.threepayinfo.R.drawable.ic_noun_mask
-import com.mickey.threepayinfo.data.StoreModel
-import com.mickey.threepayinfo.util.BitmapHelper
-import com.mickey.threepayinfo.util.StoreRenderer
-import org.json.JSONArray
-import org.json.JSONException
+import com.mickey.threepayinfo.data.RatModel
+import com.mickey.threepayinfo.util.RatRenderer
 import java.io.BufferedReader
-import java.io.IOException
 import java.io.InputStreamReader
-
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
-    private var mStoreList = mutableListOf<StoreModel>()
-    
+    private val ratList = mutableListOf<RatModel>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
 
-        parseJsonDataFromString(readInfoFromResources())
+        ratList.addAll(loadRatData())
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
-                .findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync { googleMap ->
-            //addMarkers(googleMap)
-            addClusteredMarkers(googleMap)
-
-            val center = LatLng(23.921171, 120.942711)
-            googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(center, 7.0f))
-        }
-    }
-
-    private fun addClusteredMarkers(googleMap: GoogleMap) {
-        // Create the ClusterManager class and set the custom renderer.
-        val clusterManager = ClusterManager<StoreModel>(this, googleMap)
-        clusterManager.renderer = StoreRenderer(
-            this,
-            googleMap,
-            clusterManager
-        )
-
-        // Add the places to the ClusterManager.
-        clusterManager.addItems(mStoreList)
-        clusterManager.cluster()
-
-        // Set ClusterManager as the OnCameraIdleListener so that it
-        // can re-cluster when zooming in and out.
-        googleMap.setOnCameraIdleListener {
-            clusterManager.onCameraIdle()
-        }
-    }
-
-    private fun parseJsonDataFromString(readInfoFromResources: String?) {
-        readInfoFromResources?.run {
-            val gson = Gson()
-            val jsonArray = JSONArray(this)
-
-            mStoreList.clear()
-            for (x in 0 until jsonArray.length()) {
-                val jsonElement: JsonElement = gson.fromJson(jsonArray[x].toString(), JsonElement::class.java)
-                val storeModel = gson.fromJson(jsonElement, StoreModel::class.java)
-                mStoreList.add(storeModel)
-            }
-            Log.d("TEST", "${mStoreList.size}")
-        }
-    }
-
-    /**
-     * Streams the JSON data from insect.json, parses it.
-     *
-     * @throws IOException
-     * @throws JSONException
-     */
-    @Throws(IOException::class, JSONException::class)
-    private fun readInfoFromResources(): String? {
-        val builder = StringBuilder()
-        val input = resources.openRawResource(R.raw.ticket_data)
-        val reader = BufferedReader(InputStreamReader(input))
-        var line: String?
-        while (reader.readLine().also { line = it } != null) {
-            builder.append(line)
-        }
-
-        //Parse resource
-        return builder.toString()
+            .findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
+        val clusterManager = ClusterManager<RatModel>(this, googleMap)
+        clusterManager.renderer = RatRenderer(this, googleMap, clusterManager)
 
+        clusterManager.markerCollection.setInfoWindowAdapter(object : GoogleMap.InfoWindowAdapter {
+            override fun getInfoWindow(marker: Marker): View? = null
+            override fun getInfoContents(marker: Marker): View? {
+                val rat = marker.tag as? RatModel ?: return null
+                val view = LayoutInflater.from(this@MapsActivity)
+                    .inflate(R.layout.marker_info_contents, null)
+                view.findViewById<TextView>(R.id.text_view_title).text = rat.name
+                view.findViewById<TextView>(R.id.text_view_address).text =
+                    "${rat.district}　${rat.date}"
+                view.findViewById<TextView>(R.id.text_view_severity).text =
+                    "嚴重程度：${"★".repeat(rat.severity ?: 1)}${"☆".repeat(5 - (rat.severity ?: 1))}"
+                view.findViewById<TextView>(R.id.text_view_description).text = rat.description
+                return view
+            }
+        })
+
+        clusterManager.addItems(ratList)
+        clusterManager.cluster()
+
+        googleMap.setOnCameraIdleListener { clusterManager.onCameraIdle() }
+        googleMap.setOnMarkerClickListener(clusterManager)
+
+        val taipei = LatLng(25.0478, 121.5319)
+        googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(taipei, 12f))
+    }
+
+    private fun loadRatData(): List<RatModel> {
+        val json = BufferedReader(InputStreamReader(resources.openRawResource(R.raw.rat_data)))
+            .readText()
+        val type = object : TypeToken<List<RatModel>>() {}.type
+        return Gson().fromJson(json, type)
     }
 }

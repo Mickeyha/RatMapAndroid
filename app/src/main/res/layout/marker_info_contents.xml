@@ -1,35 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
-    android:layout_width="wrap_content"
+    android:layout_width="280dp"
     android:layout_height="wrap_content"
-    android:gravity="center_horizontal"
-    android:padding="8dp">
+    android:padding="12dp"
+    android:background="@android:color/white">
 
     <TextView
         android:id="@+id/text_view_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@android:color/black"
-        android:textSize="18sp"
+        android:textSize="16sp"
         android:textStyle="bold"
-        tools:text="Title"/>
+        android:layout_marginBottom="4dp"/>
 
     <TextView
         android:id="@+id/text_view_address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@android:color/black"
-        android:textSize="16sp"
-        tools:text="123 Main Street"/>
+        android:textColor="#666666"
+        android:textSize="13sp"
+        android:layout_marginBottom="4dp"/>
 
     <TextView
-        android:id="@+id/text_view_rating"
+        android:id="@+id/text_view_severity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#F44336"
+        android:textSize="14sp"
+        android:layout_marginBottom="4dp"/>
+
+    <TextView
+        android:id="@+id/text_view_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@android:color/black"
-        android:textSize="16sp"
-        tools:text="Rating: 3"/>
+        android:textSize="13sp"/>
 
 </LinearLayout>
